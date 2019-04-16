@@ -5,8 +5,6 @@ import java.util.regex.Pattern;
 
 /**
  * java AutoSummary
- * -h help
- * -i ignore files
  *
  * @author yugj
  * @date 19/4/15 20:28.
@@ -15,6 +13,10 @@ public class AutoSummary {
 
     private static List<String> ignoredFiles = new ArrayList<String>();
     private static String basePath;
+    private static String usage;
+    private static final String SUMMARY_MD = "SUMMARY.md";
+    private static final String README_MD = "README.md";
+
 
     /**
      * SUMMARY.md String
@@ -26,7 +28,9 @@ public class AutoSummary {
         ignoredFiles.add(".git");
         ignoredFiles.add(".DS_Store");
         ignoredFiles.add("node_modules");
-        ignoredFiles.add("SUMMARY.md");
+        ignoredFiles.add(SUMMARY_MD);
+
+        usage = "usage:  java AutoSummary {book-path}";
     }
 
     /**
@@ -48,7 +52,7 @@ public class AutoSummary {
         List fileList = Arrays.asList(files);
         Collections.sort(fileList, new Comparator<File>() {
             public int compare(File o1, File o2) {
-                if (o1.getName().equals("README.md")) {
+                if (o1.getName().equals(README_MD)) {
                     return -1;
                 }
                 return o1.getName().compareTo(o2.getName());
@@ -86,6 +90,7 @@ public class AutoSummary {
      */
     private String generateFileAlias(File file) throws IOException {
 
+        //目录文件优先使用下划线命名分隔命名，无则使用文件夹名字
         if (file.isDirectory()) {
             String[] fileSplit = file.getName().split("_");
             if (fileSplit.length == 2) {
@@ -104,6 +109,9 @@ public class AutoSummary {
                 return firstHeading[1];
             }
         }
+
+        fr.close();
+        bf.close();
         return file.getName();
     }
 
@@ -209,8 +217,16 @@ public class AutoSummary {
 
     public static void main(String[] args) throws IOException {
 
+        if (args.length == 0 || "".equals(args[0].trim())) {
+            System.out.println(usage);
+            System.exit(1);
+        }
+
         AutoSummary autoSummary = new AutoSummary();
         basePath = args[0];
+        if (!basePath.endsWith(File.separator)) {
+            basePath = basePath + File.separator;
+        }
 
         System.out.println("base path :" + basePath);
 
@@ -218,8 +234,7 @@ public class AutoSummary {
 
         System.out.println(summary.toString());
 
-
-        String summaryPath = basePath + File.separator + "SUMMARY.md";
+        String summaryPath = basePath + File.separator + SUMMARY_MD;
         boolean success = new File(summaryPath).delete();
         if (!success) {
             System.out.println("delete summary failed");
@@ -227,8 +242,9 @@ public class AutoSummary {
         }
 
         FileWriter writer;
-        writer = new FileWriter(basePath + File.separator + "SUMMARY.md");
+        writer = new FileWriter(basePath + File.separator + SUMMARY_MD);
         writer.write(summary.toString());
+
         writer.flush();
         writer.close();
 
