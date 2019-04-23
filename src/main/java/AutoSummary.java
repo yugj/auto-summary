@@ -235,7 +235,11 @@ public class AutoSummary {
         System.out.println(summary.toString());
 
         String summaryPath = basePath + File.separator + SUMMARY_MD;
-        boolean success = new File(summaryPath).delete();
+        boolean success = true;
+        File summaryFile = new File(summaryPath);
+        if (summaryFile.exists()) {
+            success = summaryFile.delete();
+        }
         if (!success) {
             System.out.println("delete summary failed");
             System.exit(1);
